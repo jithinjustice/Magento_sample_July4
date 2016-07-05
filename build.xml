@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Buildfile
+ *
+ * Can be used with Apache Ant, Phing, etc.
+ *
+ * @author      Constantin Bejenaru <boby@frozenminds.com>
+ * @link        https://github.com/frozenminds/php-qatools-magento
+ * @copyright   Copyright (c) 2014 Constantin Bejenaru (http://frozenminds.com/)
+ * @license     http://opensource.org/licenses/MIT The MIT License (MIT)
+ */
+-->
+<project name="Magento" default="build">
+    <!-- Build -->
+    <target name="build"
+            depends="prepare,composer-install,lint,phploc,pdepend,phpmd-ci,phpcs-ci,phpcpd,phpcb,phpdoc,phpunit"/>
+
+    <!-- Build in parallel -->
+    <target name="build-parallel"
+            depends="prepare,composer-install,lint,tools-parallel,phpunit"/>
+
+    <!-- Run tools in parallel -->
+    <target name="tools-parallel" description="Run tools in parallel">
+        <echo>Running tools in parallel...</echo>
+        <parallel threadCount="2">
+            <sequential>
+                <antcall target="pdepend"/>
+                <antcall target="phpmd-ci"/>
+            </sequential>
+            <antcall target="phpcpd"/>
+            <antcall target="phpcs-ci"/>
+            <antcall target="phploc"/>
+            <antcall target="phpcb"/>
+            <antcall target="phpdoc"/>
+        </parallel>
+    </target>
+
+    <!-- Clean -->
+    <target name="clean" description="Cleanup build artifacts">
+        <echo>Cleaning up build artifacts...</echo>
+        <delete dir="${basedir}/build/api"/>
+        <delete dir="${basedir}/build/coverage"/>
+        <delete dir="${basedir}/build/logs"/>
+        <delete dir="${basedir}/build/pdepend"/>
+    </target>
+
+    <!-- Prepare -->
+    <target name="prepare" depends="clean" description="Prepare for build">
+        <echo>Preparing for build...</echo>
+        <mkdir dir="${basedir}/build/api"/>
+        <mkdir dir="${basedir}/build/coverage"/>
+        <mkdir dir="${basedir}/build/logs"/>
+        <mkdir dir="${basedir}/build/pdepend"/>
+    </target>
+
+    <!-- Get composer -->
+    <target name="composer-download" description="Download Composer">
+        <echo>Downloading Composer...</echo>
+        <exec executable="/bin/bash">
+            <arg value="-c"/>
+            <arg value="curl -s https://getcomposer.org/installer | php"/>
+        </exec>
+    </target>
+
+    <!-- Composer install dependencies -->
+    <target name="composer-install" depends="composer-download" description="Install dependencies via Composer">
+        <echo>Installing dependencies via Composer...</echo>
+        <exec executable="${basedir}/composer.phar" failonerror="true">
+            <arg value="update"/>
+            <arg value="--dev"/>
+            <arg value="--optimize-autoloader"/>
+        </exec>
+    </target>
+
+    <!-- Lint -->
+    <target name="lint" description="Perform syntax check of sourcecode files">
+        <echo>Performing syntax check of sourcecode files...</echo>
+        <apply executable="php" failonerror="true">
+            <arg value="-l"/>
+
+            <fileset dir="${basedir}/app/code">
+                <include name="**/*.php"/>
+            </fileset>
+
+            <fileset dir="${basedir}/lib">
+                <include name="**/*.php"/>
+            </fileset>
+
+            <fileset dir="${basedir}/shell">
+                <include name="**/*.php"/>
+            </fileset>
+        </apply>
+    </target>
+
+    <!-- PHPLOC-->
+    <target name="phploc" description="Measure project size using PHPLOC">
+        <echo>Measuring project size using PHPLOC...</echo>
+        <exec executable="${basedir}/vendor/bin/phploc">
+            <arg value="--no-interaction"/>
+            <arg value="--progress"/>
+
+            <arg value="--log-csv"/>
+            <arg value="${basedir}/build/logs/phploc.csv"/>
+
+            <arg value="--exclude"/>
+            <arg value="app/code/core"/>
+            <arg value="--exclude"/>
+            <arg value="app/code/local/Mage"/>
+            <arg value="--exclude"/>
+            <arg value="app/code/local/Zend"/>
+            <arg value="--exclude"/>
+            <arg value="app/code/community"/>
+
+            <arg path="${basedir}/app/code"/>
+        </exec>
+    </target>
+
+    <!-- PHP Depend -->
+    <target name="pdepend" description="Calculate software metrics using pdepend (PHP_Depend)">
+        <echo>Calculating software metrics using pdepend (PHP_Depend)...</echo>
+        <exec executable="${basedir}/vendor/bin/pdepend">
+            <arg value="--jdepend-xml=${basedir}/build/logs/jdepend.xml"/>
+            <arg value="--jdepend-chart=${basedir}/build/pdepend/dependencies.svg"/>
+            <arg value="--overview-pyramid=${basedir}/build/pdepend/overview-pyramid.svg"/>
+
+            <arg value="--ignore=app/code/core,app/code/community,app/code/local/Mage,app/code/local/Zend"/>
+
+            <arg path="${basedir}/app/code"/>
+        </exec>
+    </target>
+
+    <!-- PHP Mess Detector -->
+    <target name="phpmd"
+            description="Perform project mess detection using PHPMD (PHP Mess Detector) Print human readable output. Intended for usage on the command line before committing.">
+        <echo>Performing project mess detection using PHPMD (PHP Mess Detector)...</echo>
+        <exec executable="${basedir}/vendor/bin/phpmd">
+            <arg path="${basedir}/app/code"/>
+
+            <arg value="text"/>
+            <arg value="${basedir}/build/phpmd/ruleset.xml"/>
+
+            <arg value="--exclude"/>
+            <arg value="--ignore=*/core/*,*/community/*,*/Mage/*,*/Zend/*,*/Test/*,*/vendor/*"/>
+
+            <arg value="--suffixes"/>
+            <arg value="php"/>
+        </exec>
+    </target>
+    <target name="phpmd-ci"
+            description="Perform project mess detection using PHPMD (PHP Mess Detector). Creats a log file for the CI server.">
+        <echo>Performing project mess detection using PHPMD (PHP Mess Detector)...</echo>
+        <exec executable="${basedir}/vendor/bin/phpmd">
+            <arg path="${basedir}/app/code"/>
+
+            <arg value="xml"/>
+            <arg value="${basedir}/build/phpmd/ruleset.xml"/>
+
+            <arg value="--exclude"/>
+            <arg value="--ignore=*/core/*,*/community/*,*/Mage/*,*/Zend/*,*/Test/*,*/vendor/*"/>
+
+            <arg value="--suffixes"/>
+            <arg value="php"/>
+
+            <arg value="--reportfile"/>
+            <arg value="${basedir}/build/logs/pmd.xml"/>
+        </exec>
+    </target>
+
+    <!-- PHP Code Sniffer -->
+    <target name="phpcs"
+            description="Find coding standard violations using PHP_CodeSniffer. Print in human readable output. Intended for usage on the command line before committing.">
+        <echo>Finding coding standard violations using phpcs (PHP_CodeSniffer)...</echo>
+        <exec executable="${basedir}/vendor/bin/phpcs">
+            <arg value="--standard=${basedir}/build/phpcs/ruleset.xml"/>
+            <arg value="--ignore=*/core/*,*/community/*,*/Mage/*,*/Zend/*,*/Test/*,*/vendor/*"/>
+
+            <arg value="--extensions=php"/>
+            <arg value="-p"/>
+
+            <arg path="${basedir}/app/code"/>
+        </exec>
+    </target>
+    <target name="phpcs-ci"
+            description="Find coding standard violations using php (PHP_CodeSniffer). Creates a log file for the CI server.">
+        <echo>Finding coding standard violations using phpcs (PHP_CodeSniffer)...</echo>
+        <exec executable="${basedir}/vendor/bin/phpcs" output="/dev/null">
+            <arg value="--standard=${basedir}/build/phpcs/ruleset.xml"/>
+            <arg value="--ignore=*/core/*,*/community/*,*/Mage/*,*/Zend/*,*/Test/*,*/vendor/*"/>
+
+            <arg value="--extensions=php"/>
+            <arg value="-p"/>
+
+            <arg value="--report=checkstyle"/>
+            <arg value="--report-file=${basedir}/build/logs/checkstyle.xml"/>
+
+            <arg path="${basedir}/app/code"/>
+        </exec>
+    </target>
+
+    <!-- PHP Copy/Paste Detector -->
+    <target name="phpcpd" description="Find duplicate code using PHPCPD (PHP Copy/Paste Detector)">
+        <echo>Finding duplicate code using PHPCPD (PHP Copy/Paste Detector)...</echo>
+        <exec executable="${basedir}/vendor/bin/phpcpd">
+            <arg value="--progress"/>
+
+            <arg value="--exclude"/>
+            <arg value="core"/>
+            <arg value="--exclude"/>
+            <arg value="community"/>
+            <arg value="--exclude"/>
+            <arg value="Test"/>
+            <arg value="--exclude"/>
+            <arg value="vendor"/>
+            <arg value="--exclude"/>
+            <arg value="Mage"/>
+            <arg value="--exclude"/>
+            <arg value="Zend"/>
+
+            <arg value="--log-pmd"/>
+            <arg value="${basedir}/build/logs/pmd-cpd.xml"/>
+
+            <arg path="${basedir}/app/code"/>
+        </exec>
+    </target>
+
+    <!-- PHP Code Browser -->
+    <target name="phpcb" description="Aggregate tool output with PHP_CodeBrowser">
+        <echo>Aggregating tool output with phpcb (PHP_CodeBrowser)...</echo>
+        <exec executable="${basedir}/vendor/bin/phpcb">
+            <arg value="--log"/>
+            <arg path="${basedir}/build/logs"/>
+            <arg value="--source"/>
+            <arg path="${basedir}/app/code"/>
+            <arg value="--output"/>
+            <arg path="${basedir}/build/code-browser"/>
+        </exec>
+    </target>
+
+    <!-- PHP Documentor -->
+    <target name="phpdoc" description="Generate API documentation using phpDocumentor">
+        <echo>Generating API documentation using phpDocumentor...</echo>
+        <exec executable="${basedir}/vendor/bin/phpdoc">
+            <arg value="project:run"/>
+            <arg value="-c"/>
+            <arg value="${basedir}/build/phpdoc.xml"/>
+        </exec>
+    </target>
+
+    <!-- PHPUnit -->
+    <target name="phpunit" description="Run unit tests with PHPUnit">
+        <echo>Running unit tests with PHPUnit...</echo>
+        <exec executable="${basedir}/vendor/bin/phpunit" failonerror="true">
+            <arg value="--configuration"/>
+            <arg value="${basedir}/build/phpunit.xml"/>
+        </exec>
+    </target>
+</project>

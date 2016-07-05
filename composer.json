@@ -1,0 +1,57 @@
+{
+    "name": "frozenminds/php-qatools-magento",
+    "description": "PHP QA Tools for Magento",
+    "type": "magento-module",
+    "keywords": [
+        "php",
+        "qa",
+        "magento"
+    ],
+    "homepage": "https://github.com/frozenminds/php-qatools-magento",
+    "license": "MIT",
+    "authors": [{
+        "name": "Constantin Bejenaru",
+        "email": "boby@frozenminds.com",
+        "homepage": "http://frozenminds.com/",
+        "role": "Developer"
+    }],
+    "support": {
+        "issues": "https://github.com/frozenminds/php-qatools-magento/issues",
+        "wiki": "https://github.com/frozenminds/php-qatools-magento/wiki",
+        "source": "https://github.com/frozenminds/php-qatools-magento"
+    },
+    "require": {
+        "magento-hackathon/magento-composer-installer": "*",
+        "phing/phing": "*",
+        "phploc/phploc": "*",
+        "pdepend/pdepend": "*",
+        "phpmd/phpmd": "*",
+        "squizlabs/php_codesniffer": "*",
+        "sebastian/phpcpd": "*",
+        "mayflower/php-codebrowser": "*",
+        "phpdocumentor/phpdocumentor": "*",
+        "phpunit/phpunit": "3.7.*",
+        "phpunit/php-invoker": "*",
+        "phpunit/dbunit": "*",
+        "phpunit/phpunit-selenium": "*",
+        "phpunit/phpunit-story": "*",
+        "mikey179/vfsStream": "*",
+        "ecomdev/ecomdev_phpunit": "*"
+    },
+    "extra": {
+        "magento-force": 1,
+        "map": [
+            [
+                "build",
+                "build"
+            ],
+            [
+                "build.xml",
+                "build.xml"
+            ]
+        ]
+    },
+    "suggest": {
+        "n98/magerun": "Tools for managing Magento projects and installations"
+    }
+}

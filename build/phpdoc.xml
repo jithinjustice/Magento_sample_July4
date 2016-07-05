@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+/**
+ * PHPDoc configuration
+ *
+ * @see         http://www.phpdoc.org/
+ *
+ * @author      Constantin Bejenaru <boby@frozenminds.com>
+ * @link        https://github.com/frozenminds/php-qatools-magento
+ * @copyright   Copyright (c) 2014 Constantin Bejenaru (http://frozenminds.com/)
+ * @license     http://opensource.org/licenses/MIT The MIT License (MIT)
+ */
+-->
+<phpdoc>
+    <title>Magento</title>
+    <parser>
+        <target>../build/api/</target>
+        <markers>
+            <item>TODO</item>
+            <item>FIXME</item>
+        </markers>
+        <extensions>
+            <extension>php</extension>
+            <extension>phtml</extension>
+        </extensions>
+        <visibility></visibility>
+    </parser>
+    <transformer>
+        <target>output</target>
+    </transformer>
+    <logging>
+        <level>err</level>
+        <paths>
+            <default>../var/log/phpdoc.log</default>
+            <errors>../var/log/phpdoc.errors.log</errors>
+        </paths>
+    </logging>
+    <transformations>
+        <template name="responsive"/>
+    </transformations>
+    <files>
+        <ignore-hidden>on</ignore-hidden>
+        <ignore-symlinks>on</ignore-symlinks>
+        <directory>../</directory>
+        <ignore>Test/*</ignore>
+        <ignore>vendor/*</ignore>
+    </files>
+</phpdoc>

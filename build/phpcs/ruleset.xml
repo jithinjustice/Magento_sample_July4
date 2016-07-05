@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * PHP_CodeSniffer rule set for Magento
+ *
+ * @see         http://pear.php.net/package/PHP_CodeSniffer
+ *
+ * @author      Constantin Bejenaru <boby@frozenminds.com>
+ * @link        https://github.com/frozenminds/php-qatools-magento
+ * @copyright   Copyright (c) 2014 Constantin Bejenaru (http://frozenminds.com/)
+ * @license     http://opensource.org/licenses/MIT The MIT License (MIT)
+ */
+-->
+<ruleset name="Magento">
+    <description>Magento coding standard</description>
+
+    <rule ref="Zend.Files.ClosingTag"/>
+    <rule ref="Zend.NamingConventions.ValidVariableName">
+        <!-- Excluding as it conflicts with the PSR2 standard which over rides this one -->
+        <exclude name="Zend.NamingConventions.ValidVariableName.PrivateNoUnderscore"/>
+    </rule>
+
+    <rule ref="Generic.Functions.FunctionCallArgumentSpacing"/>
+    <rule ref="Generic.Functions.OpeningFunctionBraceBsdAllman"/>
+    <rule ref="Generic.PHP.DisallowShortOpenTag"/>
+    <rule ref="Generic.WhiteSpace.DisallowTabIndent"/>
+    <rule ref="Generic.WhiteSpace.ScopeIndent"/>
+    <rule ref="Generic.Files.LineLength">
+        <properties>
+            <property name="lineLimit" value="120"/>
+            <property name="absoluteLineLimit" value="120"/>
+        </properties>
+    </rule>
+    <rule ref="Generic.Files.LineEndings"/>
+    <rule ref="Generic.NamingConventions.UpperCaseConstantName"/>
+
+    <rule ref="Generic.Functions.CallTimePassByReference"/>
+
+    <rule ref="Generic.ControlStructures.InlineControlStructure"/>
+    <rule ref="Generic.PHP.DeprecatedFunctions"/>
+
+    <rule ref="PEAR.NamingConventions.ValidClassName"/>
+    <rule ref="PEAR.Classes.ClassDeclaration"/>
+    <rule ref="PEAR.Functions.FunctionDeclaration"/>
+    <rule ref="PEAR.WhiteSpace.ScopeClosingBrace"/>
+    <rule ref="PEAR.ControlStructures.ControlSignature"/>
+
+    <rule ref="Squiz.Functions.GlobalFunction"/>
+    <rule ref="Squiz.Scope.MethodScope"/>
+    <rule ref="Squiz.WhiteSpace.LogicalOperatorSpacing"/>
+    <rule ref="Squiz.Commenting.DocCommentAlignment"/>
+</ruleset>
